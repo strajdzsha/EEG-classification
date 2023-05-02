@@ -18,7 +18,6 @@ class Participants:
         for name in all_subjects:
             self.name[int(name.split('-')[1])] = name
 
-        print(self.name[0])
 
     def __getitem__(self, idx):
         """
@@ -38,7 +37,9 @@ class Participants:
 
         return data, gender, int(age), group, int(mmse)
         
-    
+    def __len__(self):
+        return len(self.name)
+
 
 if __name__ == "__main__":
     data_path = "./data/participants"
