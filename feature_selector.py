@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import pickle
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from sklearn.decomposition import PCA
 from scipy.stats import kurtosis
 from typing import List
@@ -44,7 +44,7 @@ class FeatureExtractor:
         data = pca.fit_transform(data) # (n_samples, n_components)
         return data.T #(n_components, n_samples)
 
-class FeatureSelector:
+class FeatureSelector(ABC):
     """
     This class is used to choose the features to extract
     """
