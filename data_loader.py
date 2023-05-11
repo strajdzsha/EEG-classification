@@ -35,6 +35,9 @@ class DataLoader:
         if seed:
             random.seed(seed)
     
+        for i, fpath in enumerate(self.filepaths):
+            self.filepaths[i] = fpath.replace('\\', '/')
+
         random.shuffle(self.filepaths)      
         self.idx = 0
 
