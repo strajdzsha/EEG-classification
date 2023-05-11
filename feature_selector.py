@@ -56,7 +56,39 @@ class FeatureExtractor:
         assert band is not None or freq is not None, "Either band or freq must be specified"
 
         data = self.__filter(data, band, freq, order)
-        return np.sum(data**2, axis=1)
+        return np.sum(data**2, axis=1) / data.shape[1]
+
+    def hjorth_params(self, data: np.ndarray, type:str, **kwargs):
+        """
+        Returns the Hjorth parameters of the data
+        """
+        if type == 'activity':
+            return self.__activity(data)
+        elif type == 'mobility':
+            return self.__mobility(data)
+        elif type == 'complexity':
+            return self.__complexity(data)
+
+    def __activity(self, data: np.ndarray):
+        """
+        Returns the activity of the data
+        """
+        return np.var(data, axis=1)
+    
+    def __mobility(self, data: np.ndarray):
+        """
+        Returns the mobility of the data
+        """
+        diff1 = np.diff(data, axis=1)
+        return np.sqrt(np.var(diff1, axis=1) / np.var(data, axis=1))
+    
+    def __complexity(self, data: np.ndarray):
+        """
+        Returns the complexity of the data
+        """
+        diff1 = np.diff(data, axis=1)
+        diff2 = np.diff(diff1, axis=1)
+        return np.sqrt(np.var(diff2, axis=1) / np.var(diff1, axis=1)) / self.__mobility(data)
     
     def __filter(self, data: np.ndarray, band: str = None, freq: List[int] = None, order: int = 5, **kwargs):
         """
@@ -122,15 +154,15 @@ if __name__ == "__main__":
     """
     par_loader = DataLoader('./data/dataset', participants_ids=[0])
     arr = par_loader[0]['data']
-
+    print(arr.shape)
 
     selector1 = BaselineSelector() # first selector
-    selector1.selectFeatures(['mean', 'kurtosis'], pca_components=2)
+    selector1.selectFeatures(['mean', 'kurtosis'], pca_components = 2)
 
     out1 = selector1.transform(arr)
 
     selector2 = BaselineSelector() # second selector
-    selector2.selectFeatures(['mean', 'band_power'], pca_components=2, band='alpha')
+    selector2.selectFeatures(['band_power', 'hjorth_params'], type = 'mobility', band='alpha')
 
     out2 = selector2.transform(arr)
 
