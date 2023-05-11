@@ -71,11 +71,24 @@ class FeatureExtractor:
                 output = np.concatenate((output, np.sum(data**2, axis=1) / data.shape[1]))
         return output.flatten()
 
-    def hjorth_params(self, data: np.ndarray, **kwargs):
+    def hjorth_params(self, data: np.ndarray, params: List[str], **kwargs):
         """
         Returns the Hjorth parameters of the data
         """
-        output = np.concatenate((self.__activity(data), self.__mobility(data), self.__complexity(data)))
+        output = None
+        for param in params:
+            if param == 'activity':
+                curr_feature = self.__activity(data)
+            elif param == 'mobility':
+                curr_feature = self.__mobility(data)
+            elif param == 'complexity':
+                curr_feature = self.__complexity(data)
+            else:
+                raise Exception(f"Parameter {param} not supported")
+            if output is None:
+                output = curr_feature
+            else:
+                output = np.concatenate((output, curr_feature))
         return output.flatten()
 
     def __activity(self, data: np.ndarray):
@@ -154,6 +167,39 @@ class BaselineSelector(FeatureSelector):
 
         return output
     
+class AnalysisSelector(FeatureSelector):
+    """
+    This class is used to extract the features used in analisys.
+    Main difference is that this class returns the features in a dictionary.
+    """
+    def __init__(self) -> None:
+        super().__init__()
+    
+    def transform(self, data: np.ndarray):
+
+        data = self.extractor.pca(data, **self.kwargs)
+        n_channels = data.shape[0]
+
+        output = {}
+        for f in self.features:
+            if f == 'band_power':
+                bands = []
+                if 'bands' not in self.kwargs: bands = FREQ_BANDS.keys()
+                else: bands = self.kwargs['bands']
+                curr_feature = getattr(self.extractor, f)(data, **self.kwargs)
+                for i, param in enumerate(bands):
+                    output[f'{f}_{param}'] = curr_feature[i*n_channels:(i+1)*n_channels]
+            elif f == 'hjorth_params':
+                params = []
+                if 'params' not in self.kwargs: params = ['activity', 'mobility', 'complexity']
+                else: params = self.kwargs['params']
+                curr_feature = getattr(self.extractor, f)(data, **self.kwargs)
+                for i, param in enumerate(params):
+                    output[f'{f}_{param}'] = curr_feature[i*n_channels:(i+1)*n_channels]
+            else:
+                curr_feature = getattr(self.extractor, f)(data, **self.kwargs)
+                output[f] = curr_feature
+        return output
 
     
 if __name__ == "__main__":
@@ -169,12 +215,12 @@ if __name__ == "__main__":
 
     out1 = selector1.transform(arr)
 
-    selector2 = BaselineSelector() # second selector
-    selector2.selectFeatures(['hjorth_params'])
-
+    selector2 = AnalysisSelector() # second selector
+    selector2.selectFeatures(['hjorth_params', 'mean', 'band_power', 'kurtosis'], pca_components = 2, params=['activity', 'mobility'], bands=['alpha', 'beta'])
+    # selector2.selectFeatures(['band_power'], bands=['alpha', 'beta'])
     out2 = selector2.transform(arr)
 
-    print(out1)
-    print(out2)
+    for key in out2:
+        print(key, out2[key])
     
     
