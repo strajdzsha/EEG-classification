@@ -121,20 +121,3 @@ if __name__ == "__main__":
 
     train_ids = participant_ids[:80]
     test_ids = participant_ids[80:]
- 
-
-    for x in train_loader:
-        
-        # get data and labels
-        data = x['data']
-        group = x['group']
-        mmse = x['mmse']
-        age = x['age']
-        gender = x['gender']
-
-        # extract features
-        pass
-
-    for x in test_loader:
-        # do the same for the test loader
-        pass
