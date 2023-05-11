@@ -56,7 +56,7 @@ class DataLoader:
         else:
             with open(self.filepaths[self.idx], 'rb') as f:
                 data = pickle.load(f)
-                folder_name = self.filepaths[self.idx].split('\\')[-2]
+                folder_name = self.filepaths[self.idx].split('/')[-2]
                 gender, age, group, mmse = folder_name.split('-')[2:]
                 self.idx += 1
                 return {
