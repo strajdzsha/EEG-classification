@@ -49,7 +49,6 @@ class FeatureExtractor:
         data = pca.fit_transform(data) # (n_samples, n_components)
         return data.T #(n_components, n_samples)
     
-    @staticmethod
     def band_power(self, data: np.ndarray, band: str = None, freq: List[int] = None, order: int = 5, **kwargs):
         """
         Returns the power of signal in given band
@@ -59,7 +58,7 @@ class FeatureExtractor:
         data = self.__filter(data, band, freq, order)
         return np.sum(data**2, axis=1) / data.shape[1]
     
-    def __filter(self, data: np.ndarray, band: str = None, freq: List[int] = None, order: int = 5, **kwargs):
+    def __filter(data: np.ndarray, band: str = None, freq: List[int] = None, order: int = 5, **kwargs):
         """
         Filters the data with a band pass filter
         """
