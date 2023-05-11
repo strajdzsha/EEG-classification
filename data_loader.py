@@ -4,6 +4,7 @@ import os
 import pickle
 from typing import List
 
+
 class DataLoader:
     """
     Class used for loading the training or 
@@ -62,12 +63,46 @@ class DataLoader:
                     'group': group,
                     'mmse': int(mmse)
                 }
+    def __getitem__(self, idx):
+        """
+        Returns the epoch at the given index
+        If idx is of type slice, it returns all epochs
+        in the given range
+        """
+        if isinstance(idx, int):
+            with open(self.filepaths[idx], 'rb') as f:
+                data = pickle.load(f)
+                folder_name = self.filepaths[idx].split('/')[-2]
+                gender, age, group, mmse = folder_name.split('-')[2:]
+
+                return {
+                    'data': data,
+                    'gender': gender,
+                    'age': int(age),
+                    'group': group,
+                    'mmse': int(mmse)
+                }
+            
+        elif isinstance(idx, slice):
+            if idx.start is None:
+                idx = slice(0, idx.stop, idx.step)
+            if idx.stop is None:
+                idx = slice(idx.start, len(self.filepaths), idx.step)
+            if idx.step is None:
+                idx = slice(idx.start, idx.stop, 1)
+            return [self[i] for i in range(idx.start, idx.stop, idx.step)]
 
     def reset_iter(self):
         """
         Resets the iterator
         """
         self.idx = 0
+
+    def __len__(self):
+        """
+        Returns the length of the dataset
+        """
+        return len(self.filepaths)
 
 
 if __name__ == "__main__":
@@ -83,9 +118,7 @@ if __name__ == "__main__":
 
     train_ids = participant_ids[:80]
     test_ids = participant_ids[80:]
-
-    train_loader = DataLoader(data_path, train_ids)
-    test_loader = DataLoader(data_path, test_ids)
+ 
 
     for x in train_loader:
         
@@ -98,7 +131,6 @@ if __name__ == "__main__":
 
         # extract features
         pass
-    print("Done")
 
     for x in test_loader:
         # do the same for the test loader
