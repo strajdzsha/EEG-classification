@@ -49,6 +49,7 @@ class FeatureExtractor:
         data = pca.fit_transform(data) # (n_samples, n_components)
         return data.T #(n_components, n_samples)
     
+    @staticmethod
     def band_power(self, data: np.ndarray, band: str = None, freq: List[int] = None, order: int = 5, **kwargs):
         """
         Returns the power of signal in given band
@@ -56,7 +57,7 @@ class FeatureExtractor:
         assert band is not None or freq is not None, "Either band or freq must be specified"
 
         data = self.__filter(data, band, freq, order)
-        return np.sum(data**2, axis=1)
+        return np.sum(data**2, axis=1) / data.shape[1]
     
     def __filter(self, data: np.ndarray, band: str = None, freq: List[int] = None, order: int = 5, **kwargs):
         """
@@ -122,15 +123,15 @@ if __name__ == "__main__":
     """
     par_loader = DataLoader('./data/dataset', participants_ids=[0])
     arr = par_loader[0]['data']
-
+    print(arr.shape)
 
     selector1 = BaselineSelector() # first selector
-    selector1.selectFeatures(['mean', 'kurtosis'], pca_components=2)
+    selector1.selectFeatures(['mean', 'kurtosis'], pca_components = 2)
 
     out1 = selector1.transform(arr)
 
     selector2 = BaselineSelector() # second selector
-    selector2.selectFeatures(['mean', 'band_power'], pca_components=2, band='alpha')
+    selector2.selectFeatures(['band_power'], band='alpha')
 
     out2 = selector2.transform(arr)
 
