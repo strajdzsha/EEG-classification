@@ -56,7 +56,7 @@ class DataLoader:
         else:
             with open(self.filepaths[self.idx], 'rb') as f:
                 data = pickle.load(f)
-                folder_name = self.filepaths[self.idx].split('/')[-2]
+                folder_name = self.filepaths[self.idx].split('\\')[-2]
                 gender, age, group, mmse = folder_name.split('-')[2:]
                 self.idx += 1
                 return {
@@ -121,9 +121,3 @@ if __name__ == "__main__":
 
     train_ids = participant_ids[:80]
     test_ids = participant_ids[80:]
- 
-
-    par2_loader = DataLoader(data_path, [2])
-
-    a = par2_loader[0:5]
-    print(a[0]['data'].shape)
