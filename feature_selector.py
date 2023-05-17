@@ -112,7 +112,7 @@ class FeatureExtractor:
         diff2 = np.diff(diff1, axis=1)
         return np.sqrt(np.var(diff2, axis=1) / np.var(diff1, axis=1)) / self.__mobility(data)
     
-    def __filter(self, data: np.ndarray, band: str = None, order: int = 5, **kwargs):
+    def __filter(self, data: np.ndarray, band: str = None, order: int = 4, **kwargs):
         """
         Filters the data with a band pass filter
         """
@@ -169,8 +169,9 @@ class BaselineSelector(FeatureSelector):
     
 class AnalysisSelector(FeatureSelector):
     """
-    This class is used to extract the features used in analisys.
-    Main difference is that this class returns the features in a dictionary.
+    This class is used to extract the features used in analysis.
+    Main difference from BaselineSelector
+    is that this class returns the features in a dictionary.
     """
     def __init__(self) -> None:
         super().__init__()
@@ -191,9 +192,12 @@ class AnalysisSelector(FeatureSelector):
                     output[f'{f}_{param}'] = curr_feature[i*n_channels:(i+1)*n_channels]
             elif f == 'hjorth_params':
                 params = []
-                if 'params' not in self.kwargs: params = ['activity', 'mobility', 'complexity']
-                else: params = self.kwargs['params']
-                curr_feature = getattr(self.extractor, f)(data, **self.kwargs)
+                if 'params' not in self.kwargs:
+                    params = ['activity', 'mobility', 'complexity']
+                else:
+                    params = self.kwargs['params']
+            
+                curr_feature = getattr(self.extractor, f)(data, params, **self.kwargs)
                 for i, param in enumerate(params):
                     output[f'{f}_{param}'] = curr_feature[i*n_channels:(i+1)*n_channels]
             else:
