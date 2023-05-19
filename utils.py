@@ -1,0 +1,41 @@
+import os 
+import pickle
+import random
+import numpy as np
+from typing import List
+
+def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_test_part: int = 8):
+    """
+    Takes a list of participant ids and returns balanced split 
+    to train and test sets, with adequate percentages of classes
+    Returns:
+        train_ids: List[int], test_ids: List[int]
+    """
+    if participant_ids is None:
+        participant_ids = list(range(88))
+    
+    group_nums = {'C': 0, 'A': 0, 'F': 0}
+    group_ids = {'C': [], 'A': [], 'F': []}
+    for folder_name in os.listdir(dataset_path):
+        if folder_name.startswith('sub-'):
+            group = folder_name.split('-')[4]
+            group_nums[group] += 1
+            idx = int(folder_name.split('-')[1])
+            group_ids[group].append(idx)
+    
+    assert num_test_part <= min(group_nums.values()) # if we want too many test participants
+
+    train_ids = []
+    test_ids = []
+    for group in group_ids.keys():
+        random.shuffle(group_ids[group])
+        test_ids += group_ids[group][:num_test_part]
+        train_ids += group_ids[group][num_test_part:]
+    
+    return train_ids, test_ids
+    
+
+if __name__ == "__main__":
+    participants_path = "./data/dataset"
+
+    balanced_split(participants_path, list(range(88)))
