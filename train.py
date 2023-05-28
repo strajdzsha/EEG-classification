@@ -1,5 +1,6 @@
 import configparser
 import numpy as np
+import time
 import xgboost as xgb
 
 from sklearn.linear_model import LogisticRegression
@@ -80,11 +81,6 @@ def train(config: configparser.ConfigParser):
     n_folds = int(config['Train']['n_folds'])
     num_test_part = int(config['Train']['num_test_part'])
 
-    train_acc = 0.0
-    train_f1 = 0.0
-    train_precision = 0.0
-    train_recall = 0.0
-
     feature_selector = get_selector(config)
     
     all_features = parse_config_features(config)
@@ -92,8 +88,12 @@ def train(config: configparser.ConfigParser):
     dataset_path = config['Data']['dataset_path']
 
     model = get_model(config)
-
+    absolute_start_time = time.time()
+    start_time = time.time()
+    
     for k in range(n_folds):
+        print(f'Fold {k}/{n_folds}')
+        print('Started preparing train features')
         train_ids, test_ids = balanced_split(dataset_path, num_test_part=num_test_part)
         train_data = DataLoader(dataset_path, train_ids)
         test_data = DataLoader(dataset_path, test_ids)
@@ -110,9 +110,28 @@ def train(config: configparser.ConfigParser):
 
             train_labels = np.concatenate((train_labels, [label])) if train_labels is not None else [label]
 
+        end_time = time.time()
+        print(f'Finished preparing train features: {end_time - start_time} seconds')
+
+
         # train model
+        start_time = time.time()
+        print('Started training model')
+        
         train_features = train_features.reshape(len(train_labels), -1)
         model.fit(train_features, train_labels)
+
+        end_time = time.time()
+        print(f'Finished training model: {end_time - start_time} seconds')
+        
+        train_acc = 0.0
+        train_f1 = 0.0
+        train_precision = 0.0
+        train_recall = 0.0
+
+        
+        print('Begin testing')
+        start_time = time.time()
 
         # prepare features for testing
         test_features = None
@@ -132,7 +151,35 @@ def train(config: configparser.ConfigParser):
 
         # calculate metrics
         metrics = get_metrics(test_labels, test_pred)
-        pass
+        
+        train_acc += metrics['accuracy']
+        train_f1 += metrics['f1']
+        train_precision += metrics['precision']
+        train_recall += metrics['recall']
+
+        end_time = time.time()
+        print(f'Finished testing: {end_time - start_time} seconds')
+        
+        print('Current fold metrics:')
+        print(f'Accuracy: {metrics["accuracy"]}')
+        print(f'Precision: {metrics["precision"]}')
+        print(f'Recall: {metrics["recall"]}')
+        print(f'F1: {metrics["f1"]}')
+
+    train_acc /= n_folds
+    train_f1 /= n_folds
+    train_precision /= n_folds
+    train_recall /= n_folds
+
+    print('--' * 20)
+    print('Average metrics:')
+    print(f'Accuracy: {train_acc}')
+    print(f'Precision: {train_precision}')
+    print(f'Recall: {train_recall}')
+    print(f'F1: {train_f1}')
+
+    absolute_end_time = time.time()
+    print(f'Total training time: {absolute_end_time - absolute_start_time} seconds')
 
 if __name__ == "__main__":
     config_path = './config.ini'
