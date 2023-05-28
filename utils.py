@@ -54,6 +54,14 @@ def parse_config_features(config):
     }
     return all_features
     
+def shape_wrapper(data, func, shape):
+    """
+    Wrapper function for applying a function to a matrix
+    with np.apply_along_axis (but along multiple axes)
+    """
+    data = data.reshape(shape)
+    return func(data)
+
 
 if __name__ == "__main__":
     participants_path = "./data/dataset"
