@@ -8,12 +8,14 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from pycm import ConfusionMatrix
 
 from data_loader import DataLoader
 from feature_selector import BaselineSelector, AnalysisSelector
-from utils import balanced_split, parse_config_features
+from utils import balanced_split, parse_config_features, plot_confusion_matrix
 
+import matplotlib.pyplot as plt
 
 def get_model(config: configparser.ConfigParser):
     """
@@ -28,7 +30,7 @@ def get_model(config: configparser.ConfigParser):
     
     elif name == 'knn':
         n_neighbors = int(hyperparams['n_neighbors'])
-        return KNeighborsClassifier(n_neighbors=n_neighbors, random_state=random_state)
+        return KNeighborsClassifier(n_neighbors=n_neighbors)
     
     elif name == 'svm':
         return SVC(random_state=random_state)
@@ -58,7 +60,7 @@ def get_metrics(y_true, y_pred):
         'f1': f1_score(y_true, y_pred, average='macro'),
         'precision': precision_score(y_true, y_pred, average='macro'),
         'recall': recall_score(y_true, y_pred, average='macro'),
-        'confusion_matrix': confusion_matrix(y_true, y_pred)
+        'confusion_matrix': ConfusionMatrix(y_true, y_pred)
     }
 
 
@@ -165,6 +167,8 @@ def train(config: configparser.ConfigParser):
         print(f'Precision: {metrics["precision"]}')
         print(f'Recall: {metrics["recall"]}')
         print(f'F1: {metrics["f1"]}')
+        plot_confusion_matrix(metrics["confusion_matrix"])
+
 
     train_acc /= n_folds
     train_f1 /= n_folds

@@ -3,6 +3,7 @@ import pickle
 import random
 import numpy as np
 from typing import List
+from matplotlib import pyplot as plt
 
 def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_test_part: int = 8):
     """
@@ -14,7 +15,7 @@ def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_tes
     if participant_ids is None:
         participant_ids = list(range(88))
     
-    group_nums = {'C': 0, 'A': 0, 'F': 0}
+    group_nums = {'C': 0, 'A': 0, 'F': 0'}
     group_ids = {'C': [], 'A': [], 'F': []}
     for folder_name in os.listdir(dataset_path):
         if folder_name.startswith('sub-'):
@@ -53,6 +54,10 @@ def parse_config_features(config):
         'pca_components' : pca_components
     }
     return all_features
+
+def plot_confusion_matrix(metrics):
+    metrics.plot(cmap=plt.cm.Blues, number_label=True, plot_lib="seaborn")
+    plt.show()
     
 
 if __name__ == "__main__":
