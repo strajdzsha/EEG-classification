@@ -72,11 +72,11 @@ class FeatureExtractor:
         if bands is None:
             bands = FREQ_BANDS.keys()
         for band in bands:
-            data = self.__filter(data, band, order)
+            filtered_data = self.__filter(data, band, order)
             if output is None:
-                output = np.sum(data**2, axis=1) / data.shape[1]
+                output = np.sum(filtered_data**2, axis=1) / data.shape[1]
             else:
-                output = np.concatenate((output, np.sum(data**2, axis=1) / data.shape[1]))
+                output = np.concatenate((output, np.sum(filtered_data**2, axis=1) / filtered_data.shape[1]))
         return output.flatten()
 
     def hjorth_params(self, data: np.ndarray, params: List[str], **kwargs):
@@ -213,7 +213,7 @@ if __name__ == "__main__":
     """
     Example usage of feature extractor
     """
-    par_loader = DataLoader('./data/dataset', participants_ids=[0])
+    par_loader = DataLoader('./data/dataset', participants_ids=[0], seed=42)
     arr = par_loader[0]['data']
     print(arr.shape)
 
@@ -223,7 +223,7 @@ if __name__ == "__main__":
     out1 = selector1.transform(arr)
 
     selector2 = AnalysisSelector() # second selector
-    selector2.selectFeatures(['hjorth_params', 'mean', 'band_power', 'kurtosis'], pca_components = 2, params=['activity', 'mobility'], bands=['alpha', 'beta'])
+    selector2.selectFeatures(['band_power'], pca_components = None, bands=['alpha', 'theta', 'delta', 'beta', 'gamma'])
     # selector2.selectFeatures(['band_power'], bands=['alpha', 'beta'])
     out2 = selector2.transform(arr)
 
