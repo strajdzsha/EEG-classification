@@ -13,6 +13,14 @@ class FeatureExtractor:
     """
     All features should be imlemented as a 
     method of this class
+
+    All methods should have the following signature:
+    data (np.ndarray) - (n_channels, n_samples)
+    **kwargs - additional parameters
+
+    All methods should return a np.ndarray of shape (k*n_channels, ), 
+    where k is the number of different features;
+    take a look at the band_power method for an example
     """
     
     @staticmethod
@@ -145,7 +153,6 @@ class FeatureSelector(ABC):
         """
         pass
 
-
 class BaselineSelector(FeatureSelector):
     """
     This class is used to extract the baseline features
@@ -169,7 +176,7 @@ class BaselineSelector(FeatureSelector):
     
 class AnalysisSelector(FeatureSelector):
     """
-    This class is used to extract the features used in analisys.
+    This class is used to extract the features used in analysis.
     Main difference is that this class returns the features in a dictionary.
     """
     def __init__(self) -> None:
