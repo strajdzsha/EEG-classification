@@ -64,61 +64,61 @@ class FeatureExtractor:
         """
         return skew(data, axis=1)
     
-    def band_power(self, data: np.ndarray, bands: List[str] = None, order: int = 4, **kwargs):
+    def band_power_alpha(self, data: np.ndarray, order: int = 4, **kwargs):
         """
-        Returns the power of signal in given band
+        Returns the power of signal in alpha band
         """
-        output = None
-        if bands is None:
-            bands = FREQ_BANDS.keys()
-        for band in bands:
-            filtered_data = self.__filter(data, band, order)
-            if output is None:
-                output = np.sum(filtered_data**2, axis=1) / data.shape[1]
-            else:
-                output = np.concatenate((output, np.sum(filtered_data**2, axis=1) / filtered_data.shape[1]))
-        return output.flatten()
-
-    def hjorth_params(self, data: np.ndarray, params: List[str], **kwargs):
+        filtered_data = self.__filter(data, 'alpha', order)
+        return np.sum(filtered_data**2, axis=1) / filtered_data.shape[1]
+    
+    def band_power_beta(self, data: np.ndarray, order: int = 4, **kwargs):
         """
-        Returns the Hjorth parameters of the data
+        Returns the power of signal in beta band
         """
-        output = None
-        for param in params:
-            if param == 'activity':
-                curr_feature = self.__activity(data)
-            elif param == 'mobility':
-                curr_feature = self.__mobility(data)
-            elif param == 'complexity':
-                curr_feature = self.__complexity(data)
-            else:
-                raise Exception(f"Parameter {param} not supported")
-            if output is None:
-                output = curr_feature
-            else:
-                output = np.concatenate((output, curr_feature))
-        return output.flatten()
-
-    def __activity(self, data: np.ndarray):
+        filtered_data = self.__filter(data, 'beta', order)
+        return np.sum(filtered_data**2, axis=1) / filtered_data.shape[1]
+    
+    def band_power_theta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the power of signal in theta band
+        """
+        filtered_data = self.__filter(data, 'theta', order)
+        return np.sum(filtered_data**2, axis=1) / filtered_data.shape[1]
+    
+    def band_power_delta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the power of signal in delta band
+        """
+        filtered_data = self.__filter(data, 'delta', order)
+        return np.sum(filtered_data**2, axis=1) / filtered_data.shape[1]
+    
+    def band_power_gamma(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the power of signal in gamma band
+        """
+        filtered_data = self.__filter(data, 'gamma', order)
+        return np.sum(filtered_data**2, axis=1) / filtered_data.shape[1]
+    
+    def hjorth_activity(self, data: np.ndarray, **kwargs):
         """
         Returns the activity of the data
         """
         return np.var(data, axis=1)
     
-    def __mobility(self, data: np.ndarray):
+    def hjorth_mobility(self, data: np.ndarray, **kwargs):
         """
         Returns the mobility of the data
         """
         diff1 = np.diff(data, axis=1)
         return np.sqrt(np.var(diff1, axis=1) / np.var(data, axis=1))
     
-    def __complexity(self, data: np.ndarray):
+    def hjorth_complexity(self, data: np.ndarray, **kwargs):
         """
         Returns the complexity of the data
         """
         diff1 = np.diff(data, axis=1)
         diff2 = np.diff(diff1, axis=1)
-        return np.sqrt(np.var(diff2, axis=1) / np.var(diff1, axis=1)) / self.__mobility(data)
+        return np.sqrt(np.var(diff2, axis=1) / np.var(diff1, axis=1)) / self.hjorth_mobility(data)
     
     def __filter(self, data: np.ndarray, band: str = None, order: int = 5, **kwargs):
         """
@@ -189,23 +189,8 @@ class AnalysisSelector(FeatureSelector):
 
         output = {}
         for f in self.features:
-            if f == 'band_power':
-                bands = []
-                if 'bands' not in self.kwargs: bands = FREQ_BANDS.keys()
-                else: bands = self.kwargs['bands']
-                curr_feature = getattr(self.extractor, f)(data, **self.kwargs)
-                for i, param in enumerate(bands):
-                    output[f'{f}_{param}'] = curr_feature[i*n_channels:(i+1)*n_channels]
-            elif f == 'hjorth_params':
-                params = []
-                if 'params' not in self.kwargs: params = ['activity', 'mobility', 'complexity']
-                else: params = self.kwargs['params']
-                curr_feature = getattr(self.extractor, f)(data, **self.kwargs)
-                for i, param in enumerate(params):
-                    output[f'{f}_{param}'] = curr_feature[i*n_channels:(i+1)*n_channels]
-            else:
-                curr_feature = getattr(self.extractor, f)(data, **self.kwargs)
-                output[f] = curr_feature
+            curr_feature = getattr(self.extractor, f)(data, **self.kwargs)
+            output[f] = curr_feature
         return output
 
     
@@ -223,7 +208,7 @@ if __name__ == "__main__":
     out1 = selector1.transform(arr)
 
     selector2 = AnalysisSelector() # second selector
-    selector2.selectFeatures(['band_power'], pca_components = None, bands=['alpha', 'theta', 'delta', 'beta', 'gamma'])
+    selector2.selectFeatures(['hjorth_mobility', 'band_power_gamma', 'band_power_delta', 'hjorth_complexity'], pca_components = 8)
     # selector2.selectFeatures(['band_power'], bands=['alpha', 'beta'])
     out2 = selector2.transform(arr)
 
