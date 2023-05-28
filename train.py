@@ -11,7 +11,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 
 from data_loader import DataLoader
 from feature_selector import BaselineSelector, AnalysisSelector
-from utils import balanced_split
+from utils import balanced_split, parse_config_features
 
 
 def get_model(config: configparser.ConfigParser):
@@ -20,19 +20,31 @@ def get_model(config: configparser.ConfigParser):
     """
     hyperparams = config['Model']
     name = hyperparams['model_name']
+    random_state = None if hyperparams['random_state'] == 'None' else int(hyperparams['random_state'])
 
     if name == 'logistic_regression':
-        return LogisticRegression(**hyperparams)
+        return LogisticRegression(random_state=random_state)
+    
     elif name == 'knn':
-        return KNeighborsClassifier(**hyperparams)
+        n_neighbors = int(hyperparams['n_neighbors'])
+        return KNeighborsClassifier(n_neighbors=n_neighbors, random_state=random_state)
+    
     elif name == 'svm':
-        return SVC(**hyperparams)
+        return SVC(random_state=random_state)
+    
     elif name == 'random_forest':
-        return RandomForestClassifier(**hyperparams)
+        n_estimators = int(hyperparams['n_estimators'])
+        max_depth = int(hyperparams['max_depth'])
+        return RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=random_state)
+    
     elif name == 'xgboost':
-        return xgb.XGBClassifier(**hyperparams)
+        n_estimators = int(hyperparams['n_estimators'])
+        max_depth = int(hyperparams['max_depth'])
+        return xgb.XGBClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=random_state)
+    
     elif name == 'naive_bayes':
         return GaussianNB(**hyperparams)
+    
     else:
         raise ValueError(f'Unknown model name: {name}')
     
@@ -55,9 +67,9 @@ def get_selector(config: configparser.ConfigParser):
     """
     name = config['Features']['selector_name']
     if name == 'baseline':
-        return BaselineSelector(**config['Features'])
+        return BaselineSelector()
     elif name == 'analysis':
-        return AnalysisSelector(**config['Features'])
+        return AnalysisSelector()
     else:
         raise ValueError(f'Unknown selector name: {name}')
 
@@ -74,7 +86,9 @@ def train(config: configparser.ConfigParser):
     train_recall = 0.0
 
     feature_selector = get_selector(config)
-    feature_selector.selectFeatures(**config['Features'])
+    
+    all_features = parse_config_features(config)
+    feature_selector.selectFeatures(**all_features)
     dataset_path = config['Data']['dataset_path']
 
     model = get_model(config)
@@ -84,10 +98,44 @@ def train(config: configparser.ConfigParser):
         train_data = DataLoader(dataset_path, train_ids)
         test_data = DataLoader(dataset_path, test_ids)
 
-    
+        # prepare features for training
+        train_features = None
+        train_labels = None
+        for curr in train_data:
+            data = curr['data']
+            label = curr['group']            
 
+            curr_features = feature_selector.transform(data)
+            train_features = np.concatenate((train_features, curr_features)) if train_features is not None else curr_features
+
+            train_labels = np.concatenate((train_labels, [label])) if train_labels is not None else [label]
+
+        # train model
+        train_features = train_features.reshape(len(train_labels), -1)
+        model.fit(train_features, train_labels)
+
+        # prepare features for testing
+        test_features = None
+        test_labels = None
+        for curr in test_data:
+            data = curr['data']
+            label = curr['group']
+
+            curr_features = feature_selector.transform(data)
+            test_features = np.concatenate((test_features, curr_features)) if test_features is not None else curr_features
+
+            test_labels = np.concatenate((test_labels, [label])) if test_labels is not None else [label]
+
+        # test model
+        test_features = test_features.reshape(len(test_labels), -1)
+        test_pred = model.predict(test_features)
+
+        # calculate metrics
+        metrics = get_metrics(test_labels, test_pred)
+        pass
 
 if __name__ == "__main__":
     config_path = './config.ini'
     config = configparser.ConfigParser()
     config.read(config_path)
+    train(config)

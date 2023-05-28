@@ -33,6 +33,26 @@ def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_tes
         train_ids += group_ids[group][num_test_part:]
     
     return train_ids, test_ids
+
+
+def parse_config_features(config):
+    """
+    Parses config file and returns a dictionary of features
+    """
+    feature_list = [
+        k 
+        for k, v in dict(config['Features']).items()
+        if v == 'True'
+    ] # only keep features that were selected as True in config
+    pca_components = None
+    if 'pca_n_components' in config['Features']:
+        pca_components = int(config['Features']['pca_n_components'])
+
+    all_features = {
+        'features' : feature_list,
+        'pca_components' : pca_components
+    }
+    return all_features
     
 
 if __name__ == "__main__":
