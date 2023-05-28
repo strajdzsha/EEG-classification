@@ -3,8 +3,9 @@ import pickle
 import random
 import numpy as np
 from typing import List
+from matplotlib import pyplot as plt
 
-def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_test_part: int = 8):
+def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_test_part: int = 8, seed: int = None):
     """
     Takes a list of participant ids and returns balanced split 
     to train and test sets, with adequate percentages of classes
@@ -28,6 +29,8 @@ def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_tes
     train_ids = []
     test_ids = []
     for group in group_ids.keys():
+        if seed:
+            random.seed(seed)
         random.shuffle(group_ids[group])
         test_ids += group_ids[group][:num_test_part]
         train_ids += group_ids[group][num_test_part:]
@@ -54,6 +57,9 @@ def parse_config_features(config):
     }
     return all_features
     
+def plot_confusion_matrix(metrics):
+    metrics.plot(cmap=plt.cm.Blues, number_label=True, plot_lib="seaborn")
+    plt.show()
 
 if __name__ == "__main__":
     participants_path = "./data/dataset"
