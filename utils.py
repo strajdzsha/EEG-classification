@@ -4,7 +4,7 @@ import random
 import numpy as np
 from typing import List
 
-def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_test_part: int = 8):
+def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_test_part: int = 8, seed=None):
     """
     Takes a list of participant ids and returns balanced split 
     to train and test sets, with adequate percentages of classes
@@ -13,7 +13,7 @@ def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_tes
     """
     if participant_ids is None:
         participant_ids = list(range(88))
-    
+
     group_nums = {'C': 0, 'A': 0, 'F': 0}
     group_ids = {'C': [], 'A': [], 'F': []}
     for folder_name in os.listdir(dataset_path):
@@ -28,6 +28,8 @@ def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_tes
     train_ids = []
     test_ids = []
     for group in group_ids.keys():
+        if seed:
+            random.seed(seed)
         random.shuffle(group_ids[group])
         test_ids += group_ids[group][:num_test_part]
         train_ids += group_ids[group][num_test_part:]

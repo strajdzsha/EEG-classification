@@ -45,7 +45,7 @@ def get_model(config: configparser.ConfigParser):
         n_estimators = int(hyperparams['n_estimators'])
         max_depth = int(hyperparams['max_depth'])
         eta = float(hyperparams['eta'])
-        return xgb.XGBClassifier(n_estimators=n_estimators, tree_method = 'hist', objective='multi:softmax', num_class=3, max_depth=max_depth, random_state=random_state, eta=eta)
+        return xgb.XGBClassifier(learning_rate = 0.2, n_estimators=n_estimators, objective='multi:softmax', num_class=3, max_depth=max_depth, random_state=random_state)
     
     elif name == 'naive_bayes':
         return GaussianNB(**hyperparams)

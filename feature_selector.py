@@ -44,6 +44,146 @@ class FeatureExtractor:
         """
         return kurtosis(data, axis=1)
     
+    def kurtosis_alpha(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the kurtosis of the data
+        """
+        filtered_data = self.__filter(data, 'alpha', order)
+        return kurtosis(filtered_data, axis=1)
+    
+    def kurtosis_beta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the kurtosis of the data
+        """
+        filtered_data = self.__filter(data, 'beta', order)
+        return kurtosis(filtered_data, axis=1)
+    
+    def kurtosis_theta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the kurtosis of the data
+        """
+        filtered_data = self.__filter(data, 'theta', order)
+        return kurtosis(filtered_data, axis=1)
+    
+    def kurtosis_gamma(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the kurtosis of the data
+        """
+        filtered_data = self.__filter(data, 'gamma', order)
+        return kurtosis(filtered_data, axis=1)
+    
+    def kurtosis_delta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the kurtosis of the data
+        """
+        filtered_data = self.__filter(data, 'delta', order)
+        return kurtosis(filtered_data, axis=1)
+    
+    def hjorth_activity_alpha(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth activity of the data
+        """
+        filtered_data = self.__filter(data, 'alpha', order)
+        return self.hjorth_activity(filtered_data)
+    
+    def hjorth_activity_beta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth activity of the data
+        """
+        filtered_data = self.__filter(data, 'beta', order)
+        return self.hjorth_activity(filtered_data)
+    
+    def hjorth_activity_theta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth activity of the data
+        """
+        filtered_data = self.__filter(data, 'theta', order)
+        return self.hjorth_activity(filtered_data)
+    
+    def hjorth_activity_gamma(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth activity of the data
+        """
+        filtered_data = self.__filter(data, 'gamma', order)
+        return self.hjorth_activity(filtered_data)
+    
+    def hjorth_activity_delta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth activity of the data
+        """
+        filtered_data = self.__filter(data, 'delta', order)
+        return self.hjorth_activity(filtered_data)
+    
+    def hjorth_mobility_alpha(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth mobility of the data
+        """
+        filtered_data = self.__filter(data, 'alpha', order)
+        return self.hjorth_mobility(filtered_data)
+    
+    def hjorth_mobility_beta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth mobility of the data
+        """
+        filtered_data = self.__filter(data, 'beta', order)
+        return self.hjorth_mobility(filtered_data)
+    
+    def hjorth_mobility_theta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth mobility of the data
+        """
+        filtered_data = self.__filter(data, 'theta', order)
+        return self.hjorth_mobility(filtered_data)
+    
+    def hjorth_mobility_gamma(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth mobility of the data
+        """
+        filtered_data = self.__filter(data, 'gamma', order)
+        return self.hjorth_mobility(filtered_data)
+    
+    def hjorth_mobility_delta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth mobility of the data
+        """
+        filtered_data = self.__filter(data, 'delta', order)
+        return self.hjorth_mobility(filtered_data)
+    
+    def hjorth_complexity_alpha(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth complexity of the data
+        """
+        filtered_data = self.__filter(data, 'alpha', order)
+        return self.hjorth_complexity(filtered_data)
+    
+    def hjorth_complexity_beta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth complexity of the data
+        """
+        filtered_data = self.__filter(data, 'beta', order)
+        return self.hjorth_complexity(filtered_data)
+    
+    def hjorth_complexity_theta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth complexity of the data
+        """
+        filtered_data = self.__filter(data, 'theta', order)
+        return self.hjorth_complexity(filtered_data)
+    
+    def hjorth_complexity_gamma(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth complexity of the data
+        """
+        filtered_data = self.__filter(data, 'gamma', order)
+        return self.hjorth_complexity(filtered_data)
+    
+    def hjorth_complexity_delta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth complexity of the data
+        """
+        filtered_data = self.__filter(data, 'delta', order)
+        return self.hjorth_complexity(filtered_data)
+    
     @staticmethod
     def pca(data: np.ndarray, pca_components: int = None, **kwargs):
         """
