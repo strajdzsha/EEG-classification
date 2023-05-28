@@ -64,7 +64,7 @@ class FeatureExtractor:
         """
         return skew(data, axis=1)
     
-    def band_power(self, data: np.ndarray, bands: List[str] = None, order: int = 5, **kwargs):
+    def band_power(self, data: np.ndarray, bands: List[str] = None, order: int = 4, **kwargs):
         """
         Returns the power of signal in given band
         """
@@ -218,7 +218,7 @@ if __name__ == "__main__":
     print(arr.shape)
 
     selector1 = BaselineSelector() # first selector
-    selector1.selectFeatures(['mean', 'kurtosis'], pca_components = 2)
+    selector1.selectFeatures(['mean', 'kurtosis'], pca_components = 8)
 
     out1 = selector1.transform(arr)
 
