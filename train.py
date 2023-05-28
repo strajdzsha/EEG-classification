@@ -8,14 +8,17 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
+from sklearn.preprocessing import StandardScaler
 from pycm import ConfusionMatrix
 
 from data_loader import DataLoader
 from feature_selector import BaselineSelector, AnalysisSelector
-from utils import balanced_split, parse_config_features, plot_confusion_matrix
-
+from utils import balanced_split, parse_config_features
+from imblearn.over_sampling import RandomOverSampler, SMOTE
 import matplotlib.pyplot as plt
+
+seed = 420
 
 def get_model(config: configparser.ConfigParser):
     """
@@ -43,7 +46,8 @@ def get_model(config: configparser.ConfigParser):
     elif name == 'xgboost':
         n_estimators = int(hyperparams['n_estimators'])
         max_depth = int(hyperparams['max_depth'])
-        return xgb.XGBClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=random_state)
+        eta = float(hyperparams['eta'])
+        return xgb.XGBClassifier(n_estimators=n_estimators, tree_method = 'hist', objective='multi:softmax', num_class=3, max_depth=max_depth, random_state=random_state, eta=eta)
     
     elif name == 'naive_bayes':
         return GaussianNB(**hyperparams)
@@ -96,9 +100,9 @@ def train(config: configparser.ConfigParser):
     for k in range(n_folds):
         print(f'Fold {k}/{n_folds}')
         print('Started preparing train features')
-        train_ids, test_ids = balanced_split(dataset_path, num_test_part=num_test_part)
-        train_data = DataLoader(dataset_path, train_ids)
-        test_data = DataLoader(dataset_path, test_ids)
+        train_ids, test_ids = balanced_split(dataset_path, num_test_part=num_test_part, seed=seed)
+        train_data = DataLoader(dataset_path, train_ids, seed=seed)
+        test_data = DataLoader(dataset_path, test_ids, seed=seed)
 
         # prepare features for training
         train_features = None
@@ -112,6 +116,14 @@ def train(config: configparser.ConfigParser):
 
             train_labels = np.concatenate((train_labels, [label])) if train_labels is not None else [label]
 
+        train_features = train_features.reshape(len(train_labels), -1)
+
+        smote = SMOTE(random_state=seed)
+        train_features, train_labels = smote.fit_resample(train_features, train_labels)
+
+        scaler = StandardScaler()
+        train_features = scaler.fit_transform(train_features)
+
         end_time = time.time()
         print(f'Finished preparing train features: {end_time - start_time} seconds')
 
@@ -119,8 +131,7 @@ def train(config: configparser.ConfigParser):
         # train model
         start_time = time.time()
         print('Started training model')
-        
-        train_features = train_features.reshape(len(train_labels), -1)
+
         model.fit(train_features, train_labels)
 
         end_time = time.time()
@@ -149,6 +160,7 @@ def train(config: configparser.ConfigParser):
 
         # test model
         test_features = test_features.reshape(len(test_labels), -1)
+        test_features = scaler.transform(test_features)
         test_pred = model.predict(test_features)
 
         # calculate metrics
