@@ -9,11 +9,15 @@ from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
+from sklearn.preprocessing import StandardScaler
+from pycm import ConfusionMatrix
 
 from data_loader import DataLoader
 from feature_selector import BaselineSelector, AnalysisSelector
-from utils import balanced_split, parse_config_features, shape_wrapper
+from utils import balanced_split, parse_config_features, shape_wrapper, plot_confusion_matrix
+from imblearn.over_sampling import RandomOverSampler, SMOTE
 
+seed = 420
 
 def get_model(config: configparser.ConfigParser):
     """
@@ -41,7 +45,8 @@ def get_model(config: configparser.ConfigParser):
     elif name == 'xgboost':
         n_estimators = int(hyperparams['n_estimators'])
         max_depth = int(hyperparams['max_depth'])
-        return xgb.XGBClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=random_state)
+        eta = float(hyperparams['eta'])
+        return xgb.XGBClassifier(n_estimators=n_estimators, tree_method = 'hist', objective='multi:softmax', num_class=3, max_depth=max_depth, random_state=random_state, eta=eta)
     
     elif name == 'naive_bayes':
         return GaussianNB(**hyperparams)
@@ -58,7 +63,7 @@ def get_metrics(y_true, y_pred):
         'f1': f1_score(y_true, y_pred, average='macro'),
         'precision': precision_score(y_true, y_pred, average='macro'),
         'recall': recall_score(y_true, y_pred, average='macro'),
-        'confusion_matrix': confusion_matrix(y_true, y_pred)
+        'confusion_matrix': ConfusionMatrix(y_true, y_pred)
     }
 
 
@@ -96,9 +101,9 @@ def train(config: configparser.ConfigParser):
     for k in range(n_folds):
         print(f'Fold {k}/{n_folds}')
         print('Started preparing train features')
-        train_ids, test_ids = balanced_split(dataset_path, num_test_part=num_test_part)
-        train_data = DataLoader(dataset_path, train_ids, batch_size=bs)
-        test_data = DataLoader(dataset_path, test_ids, batch_size=bs)
+        train_ids, test_ids = balanced_split(dataset_path, num_test_part=num_test_part, seed=seed)
+        train_data = DataLoader(dataset_path, train_ids, batch_size=bs, seed=seed)
+        test_data = DataLoader(dataset_path, test_ids, batch_size=bs, seed=seed)
 
         n_features = feature_selector.transform(train_data[0]['data']).shape[0] # ugly hack
         # prepare features for training
@@ -128,6 +133,14 @@ def train(config: configparser.ConfigParser):
             train_features[i*bs:(i+1)*bs] = curr_features
 
             train_labels = label if train_labels is None else train_labels + label
+
+        train_features = train_features[:len(train_labels)]
+
+        smote = SMOTE(random_state=seed)
+        train_features, train_labels = smote.fit_resample(train_features, train_labels)
+
+        scaler = StandardScaler()
+        train_features = scaler.fit_transform(train_features)
 
         end_time = time.time()
         print(f'Finished preparing train features: {end_time - start_time} seconds')
@@ -183,6 +196,7 @@ def train(config: configparser.ConfigParser):
         test_features = test_features[:len(test_labels)]
 
         # test model
+        test_features = scaler.transform(test_features)
         test_pred = model.predict(test_features)
 
         # calculate metrics
@@ -213,6 +227,7 @@ def train(config: configparser.ConfigParser):
     print(f'Precision: {train_precision}')
     print(f'Recall: {train_recall}')
     print(f'F1: {train_f1}')
+    plot_confusion_matrix(metrics["confusion_matrix"])
 
     absolute_end_time = time.time()
     print(f'Total training time: {absolute_end_time - absolute_start_time} seconds')

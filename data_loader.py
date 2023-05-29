@@ -62,6 +62,9 @@ class DataLoader:
         """
         Returns the next epoch
         """   
+
+        group_to_int = {'C': 0, 'A': 1, 'F': 2}
+
         if self.idx >= len(self.filepaths):
             raise StopIteration
         else:
@@ -74,7 +77,7 @@ class DataLoader:
                     'data': data,
                     'gender': gender,
                     'age': int(age),
-                    'group': group,
+                    'group': group_to_int[group],
                     'mmse': int(mmse)
                 }
                    
@@ -84,6 +87,9 @@ class DataLoader:
         If idx is of type slice, it returns all epochs
         in the given range
         """
+
+        group_to_int = {'C': 0, 'A': 1, 'F': 2}
+
         if isinstance(idx, int):
             with open(self.filepaths[idx], 'rb') as f:
                 data = pickle.load(f)
@@ -94,7 +100,7 @@ class DataLoader:
                     'data': data,
                     'gender': gender,
                     'age': int(age),
-                    'group': group,
+                    'group': group_to_int[group],
                     'mmse': int(mmse)
                 }
             
