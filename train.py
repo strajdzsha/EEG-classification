@@ -66,7 +66,6 @@ def get_metrics(y_true, y_pred):
         'confusion_matrix': ConfusionMatrix(y_true, y_pred)
     }
 
-
 def get_selector(config: configparser.ConfigParser):
     """
     Returns feature selector by name

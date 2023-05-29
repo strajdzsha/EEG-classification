@@ -44,6 +44,41 @@ class FeatureExtractor:
         """
         return kurtosis(data, axis=1)
     
+    def skewness_alpha(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the skewness of the data
+        """
+        filtered_data = self.__filter(data, 'alpha', order)
+        return skew(filtered_data, axis=1)
+    
+    def skewness_beta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the skewness of the data
+        """
+        filtered_data = self.__filter(data, 'beta', order)
+        return skew(filtered_data, axis=1)
+    
+    def skewness_theta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the skewness of the data
+        """
+        filtered_data = self.__filter(data, 'theta', order)
+        return skew(filtered_data, axis=1)
+    
+    def skewness_gamma(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the skewness of the data
+        """
+        filtered_data = self.__filter(data, 'gamma', order)
+        return skew(filtered_data, axis=1)
+    
+    def skewness_delta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the skewness of the data
+        """
+        filtered_data = self.__filter(data, 'delta', order)
+        return skew(filtered_data, axis=1)
+    
     def kurtosis_alpha(self, data: np.ndarray, order: int = 4, **kwargs):
         """
         Returns the kurtosis of the data
@@ -196,13 +231,6 @@ class FeatureExtractor:
         data = data.T  #(n_samples, n_channels)
         data = pca.fit_transform(data) # (n_samples, n_components)
         return data.T #(n_components, n_samples)
-    
-    @staticmethod
-    def skewness(data: np.ndarray, **kwargs):
-        """
-        Returns the skewness of the data
-        """
-        return skew(data, axis=1)
     
     def band_power_alpha(self, data: np.ndarray, order: int = 4, **kwargs):
         """
