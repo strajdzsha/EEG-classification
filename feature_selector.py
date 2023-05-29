@@ -315,7 +315,7 @@ class FeatureSelector(ABC):
         self.kwargs = kwargs
 
     @abstractmethod
-    def transform(self, data: np.ndarray):
+    def transform(self, data: np.ndarray, **kwargs):
         """
         This method is used to transform the data into features
         """
@@ -328,7 +328,7 @@ class BaselineSelector(FeatureSelector):
     def __init__(self) -> None:
         super().__init__()
     
-    def transform(self, data: np.ndarray):
+    def transform(self, data: np.ndarray, **kwargs):
         
         data = self.extractor.pca(data, **self.kwargs)
 
@@ -350,7 +350,7 @@ class AnalysisSelector(FeatureSelector):
     def __init__(self) -> None:
         super().__init__()
     
-    def transform(self, data: np.ndarray):
+    def transform(self, data: np.ndarray, **kwargs):
 
         data = self.extractor.pca(data, **self.kwargs)
         n_channels = data.shape[0]

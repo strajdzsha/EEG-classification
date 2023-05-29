@@ -65,6 +65,14 @@ def parse_config_features(config):
     }
     return all_features
     
+def shape_wrapper(data, func, shape):
+    """
+    Wrapper function for applying a function to a matrix
+    with np.apply_along_axis (but along multiple axes)
+    """
+    data = data.reshape(shape)
+    return func(data)
+
 def plot_confusion_matrix(metrics):
     metrics.plot(cmap=plt.cm.Blues, number_label=True, plot_lib="seaborn")
     plt.show()
