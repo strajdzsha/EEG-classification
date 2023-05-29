@@ -14,7 +14,7 @@ def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_tes
     """
     if participant_ids is None:
         participant_ids = list(range(88))
-    
+
     group_nums = {'C': 0, 'A': 0, 'F': 0}
     group_ids = {'C': [], 'A': [], 'F': []}
     for folder_name in os.listdir(dataset_path):
@@ -29,6 +29,8 @@ def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_tes
     train_ids = []
     test_ids = []
     for group in group_ids.keys():
+        if seed:
+            random.seed(seed)
         if seed:
             random.seed(seed)
         random.shuffle(group_ids[group])
