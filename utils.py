@@ -5,6 +5,12 @@ import numpy as np
 from typing import List
 from matplotlib import pyplot as plt
 
+def get_n_participants(dataset_path: str):
+    """
+    Returns the number of participants in the dataset
+    """
+    return len(os.listdir(dataset_path))
+
 def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_test_part: int = 8, seed: int = None):
     """
     Takes a list of participant ids and returns balanced split 
