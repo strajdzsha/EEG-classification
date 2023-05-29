@@ -1,5 +1,6 @@
 import configparser
 import numpy as np
+import os
 import pandas as pd
 import time
 
@@ -27,16 +28,20 @@ def calculate_features(config: configparser.ConfigParser):
     n_channels = 0
     features = None
     labels = None
+    par_ids = None
     start_time = time.time()
     for curr in data:
         n_epochs += 1
         data = curr['data']
+        par_id = curr['par_id']
+
         if not(n_channels): n_channels = data.shape[0]
         label = curr['group']     
         curr_features = feature_selector.transform(data)
         features = np.concatenate((features, curr_features)) if features is not None else curr_features
 
         labels = np.concatenate((labels, [label])) if labels is not None else [label]
+        par_ids = np.concatenate((par_ids, [par_id])) if par_ids is not None else [par_id]
 
         if n_epochs % 1000 == 0:
             print("Time for {} epochs is {}".format(n_epochs, time.time() - start_time))
@@ -45,9 +50,11 @@ def calculate_features(config: configparser.ConfigParser):
 
     df = pd.DataFrame(features, columns=feature_names)
     
+    if not os.path.exists("data/features"):
+        os.makedirs("data/features")
     df.to_csv("data/features/features.csv")
     np.save("data/features/labels.npy", labels)
-
+    np.save("data/features/par_ids.npy", par_ids)
 
 if __name__ == '__main__':
     config_path = './config.ini'

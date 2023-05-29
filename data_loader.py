@@ -18,7 +18,6 @@ class DataLoader:
         self.path = path
 
         self.filepaths = []
-
         for folder_name in os.listdir(path):
             if not folder_name.startswith('sub-'):
                 continue
@@ -70,10 +69,12 @@ class DataLoader:
         else:
             with open(self.filepaths[self.idx], 'rb') as f:
                 data = pickle.load(f)
+                
                 folder_name = self.filepaths[self.idx].split('/')[-2]
-                gender, age, group, mmse = folder_name.split('-')[2:]
+                par_id, gender, age, group, mmse = folder_name.split('-')[1:]
                 self.idx += 1
                 return {
+                    'par_id': int(par_id),
                     'data': data,
                     'gender': gender,
                     'age': int(age),
