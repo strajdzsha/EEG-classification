@@ -12,13 +12,12 @@ class DataLoader:
     """
     fs = 500 # for our database this is fixed
 
-    def __init__(self, path: str, participants_ids: List, seed: int = None):
+    def __init__(self, path: str, participants_ids: List, batch_size: int = 1, seed: int = None):
         
         assert os.path.exists(path)
         self.path = path
 
         self.filepaths = []
-
         for folder_name in os.listdir(path):
             if not folder_name.startswith('sub-'):
                 continue
@@ -31,6 +30,8 @@ class DataLoader:
                     if not file_name.startswith('ep_'):
                         continue
                     self.filepaths.append(os.path.join(folder_path, file_name))
+        if batch_size:
+            self.batch_size = batch_size
 
         if seed:
             random.seed(seed)
@@ -49,8 +50,17 @@ class DataLoader:
     
     def __next__(self):
         """
-        Returns the next epoch
+        Returns the next epoch or batch of epochs if batch_size > 1
+        """      
+        if self.batch_size == 1:
+            return self.nextEpoch()
+        else:
+            return [self.nextEpoch() for _ in range(self.batch_size)]
+
+    def nextEpoch(self):
         """
+        Returns the next epoch
+        """   
 
         group_to_int = {'C': 0, 'A': 1, 'F': 2}
 
@@ -59,16 +69,19 @@ class DataLoader:
         else:
             with open(self.filepaths[self.idx], 'rb') as f:
                 data = pickle.load(f)
+                
                 folder_name = self.filepaths[self.idx].split('/')[-2]
-                gender, age, group, mmse = folder_name.split('-')[2:]
+                par_id, gender, age, group, mmse = folder_name.split('-')[1:]
                 self.idx += 1
                 return {
+                    'par_id': int(par_id),
                     'data': data,
                     'gender': gender,
                     'age': int(age),
                     'group': group_to_int[group],
                     'mmse': int(mmse)
                 }
+                   
     def __getitem__(self, idx):
         """
         Returns the epoch at the given index
@@ -127,3 +140,6 @@ if __name__ == "__main__":
 
     train_ids = participant_ids[:80]
     test_ids = participant_ids[80:]
+
+    train_loader = DataLoader(data_path, participants_ids = train_ids, batch_size=2)
+    print(next(train_loader))

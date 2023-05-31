@@ -14,7 +14,7 @@ from pycm import ConfusionMatrix
 
 from data_loader import DataLoader
 from feature_selector import BaselineSelector, AnalysisSelector
-from utils import balanced_split, parse_config_features, plot_confusion_matrix
+from utils import balanced_split, parse_config_features, shape_wrapper, plot_confusion_matrix
 from imblearn.over_sampling import RandomOverSampler, SMOTE
 
 seed = 420
@@ -46,7 +46,7 @@ def get_model(config: configparser.ConfigParser):
         n_estimators = int(hyperparams['n_estimators'])
         max_depth = int(hyperparams['max_depth'])
         eta = float(hyperparams['eta'])
-        return xgb.XGBClassifier(n_estimators=n_estimators, tree_method = 'hist', objective='multi:softmax', num_class=3, max_depth=max_depth, random_state=random_state, eta=eta)
+        return xgb.XGBClassifier(learning_rate = 0.2, n_estimators=n_estimators, objective='multi:softmax', num_class=3, max_depth=max_depth, random_state=random_state)
     
     elif name == 'naive_bayes':
         return GaussianNB(**hyperparams)
@@ -66,7 +66,6 @@ def get_metrics(y_true, y_pred):
         'confusion_matrix': ConfusionMatrix(y_true, y_pred)
     }
 
-
 def get_selector(config: configparser.ConfigParser):
     """
     Returns feature selector by name
@@ -78,6 +77,7 @@ def get_selector(config: configparser.ConfigParser):
         return AnalysisSelector()
     else:
         raise ValueError(f'Unknown selector name: {name}')
+    
 
 def train(config: configparser.ConfigParser):
     """
@@ -95,27 +95,45 @@ def train(config: configparser.ConfigParser):
     model = get_model(config)
     absolute_start_time = time.time()
     start_time = time.time()
-    
+    bs = 32
+
     for k in range(n_folds):
         print(f'Fold {k}/{n_folds}')
         print('Started preparing train features')
         train_ids, test_ids = balanced_split(dataset_path, num_test_part=num_test_part, seed=seed)
-        train_data = DataLoader(dataset_path, train_ids, seed=seed)
-        test_data = DataLoader(dataset_path, test_ids, seed=seed)
+        train_data = DataLoader(dataset_path, train_ids, batch_size=bs, seed=seed)
+        test_data = DataLoader(dataset_path, test_ids, batch_size=bs, seed=seed)
 
+        n_features = feature_selector.transform(train_data[0]['data']).shape[0] # ugly hack
         # prepare features for training
-        train_features = None
+        train_features = np.zeros((len(train_data), n_features))
         train_labels = None
-        for curr in train_data:
-            data = curr['data']
-            label = curr['group']            
+        for i, curr_batch in enumerate(train_data):
+            if not isinstance(curr_batch, list): # for batch_size = 1 case
+                curr_batch = [curr_batch]
 
-            curr_features = feature_selector.transform(data)
-            train_features = np.concatenate((train_features, curr_features)) if train_features is not None else curr_features
+            data = [d['data'] for d in curr_batch]
+            data = np.stack(data) # (batch_size, num_channels, num_samples)
 
-            train_labels = np.concatenate((train_labels, [label])) if train_labels is not None else [label]
+            label = [d['group'] for d in curr_batch]
 
-        train_features = train_features.reshape(len(train_labels), -1)
+            sample_shape = (data.shape[1], data.shape[2])
+            data = data.reshape(data.shape[0], -1)
+
+            # efficient way to apply transform to each row in batch
+            curr_features = np.apply_along_axis( # (batch_size, num_features)
+                shape_wrapper,
+                axis=1,
+                arr=data,
+                shape = sample_shape,
+                func = feature_selector.transform)
+            
+
+            train_features[i*bs:(i+1)*bs] = curr_features
+
+            train_labels = label if train_labels is None else train_labels + label
+
+        train_features = train_features[:len(train_labels)]
 
         smote = SMOTE(random_state=seed)
         train_features, train_labels = smote.fit_resample(train_features, train_labels)
@@ -126,11 +144,12 @@ def train(config: configparser.ConfigParser):
         end_time = time.time()
         print(f'Finished preparing train features: {end_time - start_time} seconds')
 
+        train_features = train_features[:len(train_labels)]
 
         # train model
         start_time = time.time()
         print('Started training model')
-
+        
         model.fit(train_features, train_labels)
 
         end_time = time.time()
@@ -146,19 +165,36 @@ def train(config: configparser.ConfigParser):
         start_time = time.time()
 
         # prepare features for testing
-        test_features = None
+        test_features = np.zeros((len(test_data), n_features))
         test_labels = None
-        for curr in test_data:
-            data = curr['data']
-            label = curr['group']
+        
+        for i, curr_batch in enumerate(test_data):
+            if not isinstance(curr_batch, list):
+                curr_batch = [curr_batch]
 
-            curr_features = feature_selector.transform(data)
-            test_features = np.concatenate((test_features, curr_features)) if test_features is not None else curr_features
+            data = [d['data'] for d in curr_batch]
+            data = np.stack(data) # (batch_size, num_channels, num_samples)
 
-            test_labels = np.concatenate((test_labels, [label])) if test_labels is not None else [label]
+            label = [d['group'] for d in curr_batch]
+
+            sample_shape = (data.shape[1], data.shape[2])
+            data = data.reshape(data.shape[0], -1)
+
+            # efficient way to apply transform to each row in batch
+            curr_features = np.apply_along_axis( # (batch_size, num_features)
+                shape_wrapper,
+                axis=1,
+                arr=data,
+                shape = sample_shape,
+                func = feature_selector.transform)
+            
+            test_features[i*bs: (i+1)*bs] = curr_features
+
+            test_labels = label if test_labels is None else test_labels + label
+
+        test_features = test_features[:len(test_labels)]
 
         # test model
-        test_features = test_features.reshape(len(test_labels), -1)
         test_features = scaler.transform(test_features)
         test_pred = model.predict(test_features)
 

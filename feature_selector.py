@@ -44,6 +44,181 @@ class FeatureExtractor:
         """
         return kurtosis(data, axis=1)
     
+    def skewness_alpha(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the skewness of the data
+        """
+        filtered_data = self.__filter(data, 'alpha', order)
+        return skew(filtered_data, axis=1)
+    
+    def skewness_beta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the skewness of the data
+        """
+        filtered_data = self.__filter(data, 'beta', order)
+        return skew(filtered_data, axis=1)
+    
+    def skewness_theta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the skewness of the data
+        """
+        filtered_data = self.__filter(data, 'theta', order)
+        return skew(filtered_data, axis=1)
+    
+    def skewness_gamma(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the skewness of the data
+        """
+        filtered_data = self.__filter(data, 'gamma', order)
+        return skew(filtered_data, axis=1)
+    
+    def skewness_delta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the skewness of the data
+        """
+        filtered_data = self.__filter(data, 'delta', order)
+        return skew(filtered_data, axis=1)
+    
+    def kurtosis_alpha(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the kurtosis of the data
+        """
+        filtered_data = self.__filter(data, 'alpha', order)
+        return kurtosis(filtered_data, axis=1)
+    
+    def kurtosis_beta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the kurtosis of the data
+        """
+        filtered_data = self.__filter(data, 'beta', order)
+        return kurtosis(filtered_data, axis=1)
+    
+    def kurtosis_theta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the kurtosis of the data
+        """
+        filtered_data = self.__filter(data, 'theta', order)
+        return kurtosis(filtered_data, axis=1)
+    
+    def kurtosis_gamma(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the kurtosis of the data
+        """
+        filtered_data = self.__filter(data, 'gamma', order)
+        return kurtosis(filtered_data, axis=1)
+    
+    def kurtosis_delta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the kurtosis of the data
+        """
+        filtered_data = self.__filter(data, 'delta', order)
+        return kurtosis(filtered_data, axis=1)
+    
+    def hjorth_activity_alpha(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth activity of the data
+        """
+        filtered_data = self.__filter(data, 'alpha', order)
+        return self.hjorth_activity(filtered_data)
+    
+    def hjorth_activity_beta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth activity of the data
+        """
+        filtered_data = self.__filter(data, 'beta', order)
+        return self.hjorth_activity(filtered_data)
+    
+    def hjorth_activity_theta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth activity of the data
+        """
+        filtered_data = self.__filter(data, 'theta', order)
+        return self.hjorth_activity(filtered_data)
+    
+    def hjorth_activity_gamma(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth activity of the data
+        """
+        filtered_data = self.__filter(data, 'gamma', order)
+        return self.hjorth_activity(filtered_data)
+    
+    def hjorth_activity_delta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth activity of the data
+        """
+        filtered_data = self.__filter(data, 'delta', order)
+        return self.hjorth_activity(filtered_data)
+    
+    def hjorth_mobility_alpha(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth mobility of the data
+        """
+        filtered_data = self.__filter(data, 'alpha', order)
+        return self.hjorth_mobility(filtered_data)
+    
+    def hjorth_mobility_beta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth mobility of the data
+        """
+        filtered_data = self.__filter(data, 'beta', order)
+        return self.hjorth_mobility(filtered_data)
+    
+    def hjorth_mobility_theta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth mobility of the data
+        """
+        filtered_data = self.__filter(data, 'theta', order)
+        return self.hjorth_mobility(filtered_data)
+    
+    def hjorth_mobility_gamma(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth mobility of the data
+        """
+        filtered_data = self.__filter(data, 'gamma', order)
+        return self.hjorth_mobility(filtered_data)
+    
+    def hjorth_mobility_delta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth mobility of the data
+        """
+        filtered_data = self.__filter(data, 'delta', order)
+        return self.hjorth_mobility(filtered_data)
+    
+    def hjorth_complexity_alpha(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth complexity of the data
+        """
+        filtered_data = self.__filter(data, 'alpha', order)
+        return self.hjorth_complexity(filtered_data)
+    
+    def hjorth_complexity_beta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth complexity of the data
+        """
+        filtered_data = self.__filter(data, 'beta', order)
+        return self.hjorth_complexity(filtered_data)
+    
+    def hjorth_complexity_theta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth complexity of the data
+        """
+        filtered_data = self.__filter(data, 'theta', order)
+        return self.hjorth_complexity(filtered_data)
+    
+    def hjorth_complexity_gamma(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth complexity of the data
+        """
+        filtered_data = self.__filter(data, 'gamma', order)
+        return self.hjorth_complexity(filtered_data)
+    
+    def hjorth_complexity_delta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the hjorth complexity of the data
+        """
+        filtered_data = self.__filter(data, 'delta', order)
+        return self.hjorth_complexity(filtered_data)
+    
     @staticmethod
     def pca(data: np.ndarray, pca_components: int = None, **kwargs):
         """
@@ -56,13 +231,6 @@ class FeatureExtractor:
         data = data.T  #(n_samples, n_channels)
         data = pca.fit_transform(data) # (n_samples, n_components)
         return data.T #(n_components, n_samples)
-    
-    @staticmethod
-    def skewness(data: np.ndarray, **kwargs):
-        """
-        Returns the skewness of the data
-        """
-        return skew(data, axis=1)
     
     def band_power_alpha(self, data: np.ndarray, order: int = 4, **kwargs):
         """
@@ -147,7 +315,7 @@ class FeatureSelector(ABC):
         self.kwargs = kwargs
 
     @abstractmethod
-    def transform(self, data: np.ndarray):
+    def transform(self, data: np.ndarray, **kwargs):
         """
         This method is used to transform the data into features
         """
@@ -160,7 +328,7 @@ class BaselineSelector(FeatureSelector):
     def __init__(self) -> None:
         super().__init__()
     
-    def transform(self, data: np.ndarray):
+    def transform(self, data: np.ndarray, **kwargs):
         
         data = self.extractor.pca(data, **self.kwargs)
 
@@ -182,7 +350,7 @@ class AnalysisSelector(FeatureSelector):
     def __init__(self) -> None:
         super().__init__()
     
-    def transform(self, data: np.ndarray):
+    def transform(self, data: np.ndarray, **kwargs):
 
         data = self.extractor.pca(data, **self.kwargs)
         n_channels = data.shape[0]

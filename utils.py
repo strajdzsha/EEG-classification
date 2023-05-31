@@ -5,6 +5,12 @@ import numpy as np
 from typing import List
 from matplotlib import pyplot as plt
 
+def get_n_participants(dataset_path: str):
+    """
+    Returns the number of participants in the dataset
+    """
+    return len(os.listdir(dataset_path))
+
 def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_test_part: int = 8, seed: int = None):
     """
     Takes a list of participant ids and returns balanced split 
@@ -14,7 +20,7 @@ def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_tes
     """
     if participant_ids is None:
         participant_ids = list(range(88))
-    
+
     group_nums = {'C': 0, 'A': 0, 'F': 0}
     group_ids = {'C': [], 'A': [], 'F': []}
     for folder_name in os.listdir(dataset_path):
@@ -29,6 +35,8 @@ def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_tes
     train_ids = []
     test_ids = []
     for group in group_ids.keys():
+        if seed:
+            random.seed(seed)
         if seed:
             random.seed(seed)
         random.shuffle(group_ids[group])
@@ -57,6 +65,14 @@ def parse_config_features(config):
     }
     return all_features
     
+def shape_wrapper(data, func, shape):
+    """
+    Wrapper function for applying a function to a matrix
+    with np.apply_along_axis (but along multiple axes)
+    """
+    data = data.reshape(shape)
+    return func(data)
+
 def plot_confusion_matrix(metrics):
     metrics.plot(cmap=plt.cm.Blues, number_label=True, plot_lib="seaborn")
     plt.show()
