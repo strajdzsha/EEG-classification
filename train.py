@@ -32,7 +32,7 @@ def get_model(config: configparser.ConfigParser):
     
     elif name == 'knn':
         n_neighbors = int(hyperparams['n_neighbors'])
-        return KNeighborsClassifier(n_neighbors=n_neighbors, random_state=random_state)
+        return KNeighborsClassifier(n_neighbors=n_neighbors)
     
     elif name == 'svm':
         return SVC(random_state=random_state)
