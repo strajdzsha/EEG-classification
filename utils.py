@@ -11,7 +11,7 @@ def get_n_participants(dataset_path: str):
     """
     return len(os.listdir(dataset_path))
 
-def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_test_part: int = 8, seed: int = None):
+def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_test_part: int = 8, seed: int = None, two_classes = False):
     """
     Takes a list of participant ids and returns balanced split 
     to train and test sets, with adequate percentages of classes
@@ -34,7 +34,10 @@ def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_tes
 
     train_ids = []
     test_ids = []
-    for group in group_ids.keys():
+    groups = []
+    if two_classes:groups = ['C', 'A'] # only use C and A groups
+    else: groups = group_ids.keys() # use all groups
+    for group in groups:
         if seed:
             random.seed(seed)
         if seed:

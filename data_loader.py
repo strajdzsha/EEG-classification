@@ -142,4 +142,3 @@ if __name__ == "__main__":
     test_ids = participant_ids[80:]
 
     train_loader = DataLoader(data_path, participants_ids = train_ids, batch_size=2)
-    print(next(train_loader))

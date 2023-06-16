@@ -52,9 +52,9 @@ def calculate_features(config: configparser.ConfigParser):
     
     if not os.path.exists("data/features"):
         os.makedirs("data/features")
-    df.to_csv("data/features/features.csv")
-    np.save("data/features/labels.npy", labels)
-    np.save("data/features/par_ids.npy", par_ids)
+    df.to_csv("data/features/features_overlap.csv")
+    np.save("data/features/labels_overlap.npy", labels)
+    np.save("data/features/par_ids_overlap.npy", par_ids)
 
 if __name__ == '__main__':
     config_path = './config.ini'
