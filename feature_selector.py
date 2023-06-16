@@ -363,20 +363,18 @@ class AnalysisSelector(FeatureSelector):
 
     
 if __name__ == "__main__":
+    from matplotlib import pyplot as plt
     """
     Example usage of feature extractor
     """
-    par_loader = DataLoader('./data/dataset', participants_ids=[0], seed=42)
+    par_loader = DataLoader('./data/dataset/overlap', participants_ids=[0], seed=42)
     arr = par_loader[0]['data']
-    print(arr.shape)
-
-    selector1 = BaselineSelector() # first selector
-    selector1.selectFeatures(['mean', 'kurtosis'], pca_components = 8)
-
-    out1 = selector1.transform(arr)
+    plt.plot(arr[14])
+    plt.show()
+    print(kurtosis(arr[14], bias=True))
 
     selector2 = AnalysisSelector() # second selector
-    selector2.selectFeatures(['hjorth_mobility', 'band_power_gamma', 'band_power_delta', 'hjorth_complexity'], pca_components = 8)
+    selector2.selectFeatures(['kurtosis_theta'])
     # selector2.selectFeatures(['band_power'], bands=['alpha', 'beta'])
     out2 = selector2.transform(arr)
 
