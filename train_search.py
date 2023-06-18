@@ -115,7 +115,7 @@ if __name__ == "__main__":
         print(random_search.best_score_)
         print(random_search.cv_results_)
 
-        file_path = 'results_'+str(model_name)+'.txt'
+        file_path = 'data\\results\\results_'+str(model_name)+'.txt'
 
         with open(file_path, 'w') as file:
             file.write(str(random_search.best_params_) + '\n')
