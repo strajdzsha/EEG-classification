@@ -95,12 +95,14 @@ if __name__ == "__main__":
         model = get_model(model_name)
 
         pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('sampler', SMOTE()),
         ('pca', PCA()),
         ('model', model)
         ])
 
         print("Starting grid search...")
-        param_grid = {'pca__n_components':[100], 'model__max_depth':uniform(10, 20)} # podesiti po zelji; prima i distribucije 
+        param_grid = {'pca__n_components':[100], 'model__max_depth':[5]} # podesiti po zelji; prima i distribucije 
         scoring = {
             'accuracy': make_scorer(accuracy_score),
             'precision': make_scorer(precision_score, average='macro'),
