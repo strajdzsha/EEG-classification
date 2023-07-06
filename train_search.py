@@ -75,6 +75,12 @@ if __name__ == "__main__":
 
     X = pd.read_csv(config['Data']['features_path'])
     X.drop('Unnamed: 0', axis=1, inplace=True)
+
+    with open('top_features.txt', 'r') as file:
+        top_features = file.read().splitlines()
+    X = X[top_features]
+    print(X.shape)
+
     par_ids = np.load(config['Data']['par_ids_path'])
     X['par_ids'] = par_ids
 
@@ -90,26 +96,24 @@ if __name__ == "__main__":
     y = np.load(config['Data']['labels_path'])
 
 
-    model_names = ['random_forest'] # podesiti za koje modele se radi
+    model_names = ['svm'] # podesiti za koje modele se radi
     for model_name in model_names:
         model = get_model(model_name)
 
         pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('sampler', SMOTE()),
-        ('pca', PCA()),
         ('model', model)
         ])
 
         print("Starting grid search...")
-        param_grid = {'pca__n_components':[100], 'model__max_depth':[5]} # podesiti po zelji; prima i distribucije 
+        param_grid = {'kernel': [''], 'model__learning_rate':[0.01, 0.05, 0.1]} # podesiti po zelji; prima i distribucije 
         scoring = {
             'accuracy': make_scorer(accuracy_score),
             'precision': make_scorer(precision_score, average='macro'),
             'recall': make_scorer(recall_score, average='macro'),
             'f1': make_scorer(f1_score, average='macro')
         }
-        clf = RandomizedSearchCV(pipeline, param_grid, cv = myCViterator, scoring=scoring, n_iter=1, refit='f1') # podesiti n_iter po zelji, to je broj kombinacija koje ce da se probaju
+        clf = RandomizedSearchCV(pipeline, param_grid, cv = myCViterator, scoring=scoring, n_iter=3, refit='f1') # podesiti n_iter po zelji, to je broj kombinacija koje ce da se probaju
 
         random_search = clf.fit(X, y)
 
@@ -117,7 +121,7 @@ if __name__ == "__main__":
         print(random_search.best_score_)
         print(random_search.cv_results_)
 
-        file_path = 'data\\results\\results_'+str(model_name)+'.txt'
+        file_path = 'data/results/results_'+str(model_name)+'.txt'
 
         with open(file_path, 'w') as file:
             file.write(str(random_search.best_params_) + '\n')
