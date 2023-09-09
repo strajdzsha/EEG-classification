@@ -11,6 +11,12 @@ def get_n_participants(dataset_path: str):
     """
     return len(os.listdir(dataset_path))
 
+def leave_one_out(dataset_path: str, par_id: int):
+    train_ids = [x for x in range(88) if x != par_id]
+    test_ids = [par_id]
+
+    return train_ids, test_ids
+
 def balanced_split(dataset_path: str, participant_ids: List[int] = None, num_test_part: int = 8, seed: int = None, two_classes = False):
     """
     Takes a list of participant ids and returns balanced split 
@@ -83,4 +89,4 @@ def plot_confusion_matrix(metrics):
 if __name__ == "__main__":
     participants_path = "./data/dataset"
 
-    balanced_split(participants_path, list(range(88)))
+    tr, te = leave_one_out(participants_path, 5)

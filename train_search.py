@@ -21,10 +21,13 @@ from pycm import ConfusionMatrix
 
 from data_loader import DataLoader
 from feature_selector import BaselineSelector, AnalysisSelector
-from utils import balanced_split, parse_config_features, shape_wrapper, plot_confusion_matrix
+from utils import balanced_split, leave_one_out
 from imblearn.over_sampling import RandomOverSampler, SMOTE
 from sklearn.decomposition import PCA
 from matplotlib import pyplot as plt
+import warnings
+
+warnings.filterwarnings("ignore")
 
 def get_model(model_name):
     """
@@ -74,52 +77,76 @@ if __name__ == "__main__":
     print("n_folds is {} and num_test_part is {}".format(n_folds, num_test_part))
 
     X = pd.read_csv(config['Data']['features_path'])
+    print(config['Data']['features_path'])
     X.drop('Unnamed: 0', axis=1, inplace=True)
-    par_ids = np.load(config['Data']['par_ids_path'])
-    X['par_ids'] = par_ids
 
-    dataset_path = config['Data']['dataset_path']
-    myCViterator = []
-    for i in range(n_folds):
-        train_ids, test_ids = balanced_split(dataset_path, num_test_part=num_test_part)
-        train_idx = np.where(np.array(X['par_ids'].isin(train_ids)) == True)[0]
-        test_idx = np.where(np.array(X['par_ids'].isin(test_ids)) == True)[0]
-        myCViterator.append((train_idx, test_idx))
-    X = X.drop('par_ids', axis=1)
+    outlier_ids = [5, 40, 55, 25, 29, 31, 35, 85, 74, 24, 63, 79]
+    # outlier_ids = []
 
-    y = np.load(config['Data']['labels_path'])
+    # selecting features
+    top_features = []
+    with open('mutual_info.txt', 'r') as file:
+        for line in file:
+            ft = line.strip().split(' ')[0]
+            top_features.append((line.strip()).split(' ')[0])
+    n_features = [5]
 
+    for n in n_features:
+        top_features = top_features[:n]
+        X = X[top_features]
 
-    model_names = ['random_forest'] # podesiti za koje modele se radi
-    for model_name in model_names:
-        model = get_model(model_name)
+        par_ids = np.load(config['Data']['par_ids_path'])
+        X['par_ids'] = par_ids
 
-        pipeline = Pipeline([
-        ('scaler', StandardScaler()),
-        ('sampler', SMOTE()),
-        ('pca', PCA()),
-        ('model', model)
-        ])
+        y = np.load(config['Data']['labels_path'])
+        X['labels'] = y
+        X = X[X['labels'] != 2]
 
-        print("Starting grid search...")
-        param_grid = {'pca__n_components':[100], 'model__max_depth':[5]} # podesiti po zelji; prima i distribucije 
-        scoring = {
-            'accuracy': make_scorer(accuracy_score),
-            'precision': make_scorer(precision_score, average='macro'),
-            'recall': make_scorer(recall_score, average='macro'),
-            'f1': make_scorer(f1_score, average='macro')
-        }
-        clf = RandomizedSearchCV(pipeline, param_grid, cv = myCViterator, scoring=scoring, n_iter=1, refit='f1') # podesiti n_iter po zelji, to je broj kombinacija koje ce da se probaju
+        for id in outlier_ids:
+            X = X[X['par_ids'] != id]
 
-        random_search = clf.fit(X, y)
+        y = X['labels']
+        X.drop(['labels'], axis=1, inplace=True)
 
-        print(random_search.best_params_)
-        print(random_search.best_score_)
-        print(random_search.cv_results_)
+        dataset_path = config['Data']['dataset_path']
+        myCViterator = []
 
-        file_path = 'data\\results\\results_'+str(model_name)+'.txt'
+        for i in range(n_folds):
+            train_ids, test_ids = leave_one_out(dataset_path, par_id=i)
+            train_idx = np.where(np.array(X['par_ids'].isin(train_ids)) == True)[0]
+            test_idx = np.where(np.array(X['par_ids'].isin(test_ids)) == True)[0]
+            if len(test_idx) == 0: continue
+            myCViterator.append((train_idx, test_idx))
+        X = X.drop('par_ids', axis=1)
 
-        with open(file_path, 'w') as file:
-            file.write(str(random_search.best_params_) + '\n')
-            file.write(str(random_search.best_score_) + '\n')
-            file.write(str(random_search.cv_results_) + '\n')
+        model_names = ['random_forest'] # podesiti za koje modele se radi
+        for model_name in model_names:
+            model = get_model(model_name)
+
+            pipeline = Pipeline([
+            ('scaler', StandardScaler()),
+            ('model', model)
+            ])
+
+            print("Starting grid search...")
+            param_grid = {'model__n_estimators':[100], 'model__max_depth':[4]} # podesiti po zelji; prima i distribucije 
+            scoring = {
+                'accuracy': make_scorer(accuracy_score),
+                'precision': make_scorer(precision_score, average='macro'),
+                'recall': make_scorer(recall_score, average='macro'),
+                'f1': make_scorer(f1_score, average='macro')
+            }
+            clf = RandomizedSearchCV(pipeline, param_grid, cv = myCViterator, scoring=scoring, n_iter=1, refit='f1', error_score="raise") # podesiti n_iter po zelji, to je broj kombinacija koje ce da se probaju
+
+            random_search = clf.fit(X, y)
+
+            print(random_search.best_params_)
+            print(random_search.best_score_)
+            print(random_search.cv_results_)
+
+            file_path = 'data\\results\\results_'+str(model_name)+'_test_' + str(n) + '.txt'
+
+            with open(file_path, 'w') as file:
+                file.write(str(random_search.best_params_) + '\n')
+                file.write(str(random_search.best_score_) + '\n')
+                file.write(str(random_search.cv_results_) + '\n')

@@ -4,7 +4,7 @@ import pickle
 from abc import ABC, abstractmethod
 from sklearn.decomposition import PCA
 from scipy.stats import kurtosis, skew
-from scipy.signal import butter, filtfilt
+from scipy.signal import butter, filtfilt, periodogram, welch
 from typing import List
 from config import *
 from data_loader import DataLoader
@@ -43,6 +43,67 @@ class FeatureExtractor:
         Returns the kurtosis of the data
         """
         return kurtosis(data, axis=1)
+    
+    def shannon_entropy_alpha(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the Shannon entropy of the data
+        """
+        filtered_data = self.__filter(data, 'alpha', order)
+        _, psd = welch(data, FS, axis=1)
+        psd_norm = psd / psd.sum(axis=1, keepdims=True)
+        xlogx = psd_norm * np.log(psd_norm)
+        se = -xlogx.sum(axis=1)
+
+        return se
+    
+    def shannon_entropy_beta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the Shannon entropy of the data
+        """
+        filtered_data = self.__filter(data, 'beta', order)
+        _, psd = welch(data, FS, axis=1)
+        psd_norm = psd / psd.sum(axis=1, keepdims=True)
+        xlogx = psd_norm * np.log(psd_norm)
+        se = -xlogx.sum(axis=1)
+
+        return se
+    
+    def shannon_entropy_theta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the Shannon entropy of the data
+        """
+        filtered_data = self.__filter(data, 'theta', order)
+        _, psd = welch(data, FS, axis=1)
+        psd_norm = psd / psd.sum(axis=1, keepdims=True)
+        xlogx = psd_norm * np.log(psd_norm)
+        se = -xlogx.sum(axis=1)
+
+        return se
+    
+    def shannon_entropy_gamma(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the Shannon entropy of the data
+        """
+        filtered_data = self.__filter(data, 'gamma', order)
+        _, psd = welch(data, FS, axis=1)
+        psd_norm = psd / psd.sum(axis=1, keepdims=True)
+        xlogx = psd_norm * np.log(psd_norm)
+        se = -xlogx.sum(axis=1)
+
+        return se
+    
+    def shannon_entropy_delta(self, data: np.ndarray, order: int = 4, **kwargs):
+        """
+        Returns the Shannon entropy of the data
+        """
+        filtered_data = self.__filter(data, 'delta', order)
+        _, psd = welch(data, FS, axis=1)
+        psd_norm = psd / psd.sum(axis=1, keepdims=True)
+        xlogx = psd_norm * np.log(psd_norm)
+        se = -xlogx.sum(axis=1)
+
+        return se
+    
     
     def skewness_alpha(self, data: np.ndarray, order: int = 4, **kwargs):
         """
@@ -367,16 +428,15 @@ if __name__ == "__main__":
     """
     Example usage of feature extractor
     """
-    par_loader = DataLoader('./data/dataset/overlap', participants_ids=[0], seed=42)
-    arr = par_loader[0]['data']
-    plt.plot(arr[14])
+    par_loader = DataLoader('./data/dataset/overlap', participants_ids=[64], seed=42)
+    arr = par_loader[63]['data']
+    plt.plot(arr[9])
     plt.show()
-    print(kurtosis(arr[14], bias=True))
 
     selector2 = AnalysisSelector() # second selector
-    selector2.selectFeatures(['kurtosis_theta'])
-    # selector2.selectFeatures(['band_power'], bands=['alpha', 'beta'])
+    selector2.selectFeatures(['hjorth_activity_alpha'])
     out2 = selector2.transform(arr)
+    print(len(out2))
 
     for key in out2:
         print(key, out2[key])
