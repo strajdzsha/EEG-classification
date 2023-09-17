@@ -20,7 +20,7 @@ from utils import balanced_split, leave_one_out, get_git_root
 from constants import RESULTS_PATH
 import warnings
 
-from temp import top_uncorrelated_features
+from utils import top_uncorrelated_features
 
 warnings.filterwarnings("ignore")
 

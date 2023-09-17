@@ -5,6 +5,7 @@ import random
 import numpy as np
 from typing import List
 from matplotlib import pyplot as plt
+import pandas as pd
 
 def get_n_participants(dataset_path: str):
     """
@@ -93,6 +94,8 @@ def get_git_root():
 
 
 def top_uncorrelated_features(X, n_features, top_features):
+    if n_features == len(X.columns):
+        return X.columns
     
     cnt = 0
     next_ft_idx = 0
