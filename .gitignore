@@ -4,3 +4,5 @@ data
 __pycache__
 temp.py
 env
+results
+launch.json

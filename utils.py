@@ -1,4 +1,5 @@
 import os 
+import git
 import pickle
 import random
 import numpy as np
@@ -86,7 +87,9 @@ def plot_confusion_matrix(metrics):
     metrics.plot(cmap=plt.cm.Blues, number_label=True, plot_lib="seaborn")
     plt.show()
 
-if __name__ == "__main__":
-    participants_path = "./data/dataset"
+def get_git_root():
+    repo = git.Repo('.', search_parent_directories=True)
+    return repo.working_tree_dir
 
-    tr, te = leave_one_out(participants_path, 5)
+if __name__ == "__main__":
+    path = get_git_root()
