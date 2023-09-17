@@ -91,5 +91,26 @@ def get_git_root():
     repo = git.Repo('.', search_parent_directories=True)
     return repo.working_tree_dir
 
+
+def top_uncorrelated_features(X, n_features, top_features):
+    
+    cnt = 0
+    next_ft_idx = 0
+    result_features = []
+    while cnt < n_features:
+        for ft in top_features[next_ft_idx:]:
+            corr = X[result_features + [ft]].corr()
+            mask = np.ones_like(corr, dtype=np.bool)
+            mask[np.tril_indices_from(mask)] = False
+            
+            corr = corr * mask
+            if corr[ft].max() < 0.5:
+                result_features.append(ft)
+                cnt += 1
+                next_ft_idx = top_features.index(ft) + 1
+                break
+    
+    return result_features
+
 if __name__ == "__main__":
     path = get_git_root()
